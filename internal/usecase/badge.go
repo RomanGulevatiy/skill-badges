@@ -25,14 +25,16 @@ func NewBadgeUsecase(bInmemoryRepo BadgeInmemoryRepo, logger *slog.Logger) *Badg
 	}
 }
 
-type Input struct {
-	BadgeParam   string
-	PerlineParam int
-	GapParam     int
-	SizeParam    int
-}
+type (
+	Input struct {
+		BadgeParam   string
+		PerlineParam int
+		GapParam     int
+		SizeParam    int
+	}
 
-type Output string
+	Output string
+)
 
 func (u *BadgeUsecase) GetBadges(ctx context.Context, in Input) (Output, error) {
 	names := strings.Split(in.BadgeParam, ",")
