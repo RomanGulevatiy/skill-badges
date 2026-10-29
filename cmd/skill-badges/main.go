@@ -7,12 +7,13 @@ import (
 
 	"github.com/RomanGulevatiy/skill-badges/internal/handler"
 	"github.com/RomanGulevatiy/skill-badges/internal/repository/inmemory"
+	httpserver "github.com/RomanGulevatiy/skill-badges/internal/transport/http"
 	"github.com/RomanGulevatiy/skill-badges/internal/usecase"
 )
 
 func main() {
 	opts := &slog.HandlerOptions{
-		Level: slog.LevelError,
+		Level: slog.LevelWarn,
 	}
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, opts))
 
@@ -28,8 +29,11 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/v1/badges", bHandler.GetBadges)
 
-	logger.Info("server started", slog.String("port", ":8080"))
-	if err := http.ListenAndServe(":8080", mux); err != nil {
+	srvConfig := httpserver.NewConfig()
+	server := httpserver.New(mux, srvConfig, logger)
+
+	if err := server.Run(); err != nil {
 		logger.Error("internal server error", slog.Any("error", err))
+		os.Exit(1)
 	}
 }
