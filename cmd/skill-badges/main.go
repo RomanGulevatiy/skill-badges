@@ -19,7 +19,7 @@ func main() {
 
 	bInmemoryRepo, err := inmemory.NewBadgeInmemoryRepo("assets", logger)
 	if err != nil {
-		logger.Error("failed to innit badge in-memory repo", slog.Any("error", err))
+		logger.Error("failed to init badge in-memory repo", slog.Any("error", err))
 		os.Exit(1)
 	}
 
