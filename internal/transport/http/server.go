@@ -42,7 +42,7 @@ func (s *HTTPServer) Run() error {
 	go func() {
 		defer close(serverErr)
 
-		s.logger.Warn("server started", slog.String("addr", s.config.Addr))
+		s.logger.Info("server started", slog.String("addr", s.config.Addr))
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			serverErr <- err
 		}
@@ -54,7 +54,7 @@ func (s *HTTPServer) Run() error {
 			return fmt.Errorf("listen and serve HTTP: %w", err)
 		}
 	case <-ctx.Done():
-		s.logger.Warn("context cancelled")
+		s.logger.Info("context cancelled")
 	}
 
 	shutdownCtx, cancel := context.WithTimeout(
@@ -72,6 +72,6 @@ func (s *HTTPServer) Run() error {
 
 	<-serverErr
 
-	s.logger.Warn("server exited gracefully")
+	s.logger.Info("server exited gracefully")
 	return nil
 }
