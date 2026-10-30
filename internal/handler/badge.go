@@ -29,7 +29,7 @@ func (h *BadgeHandler) GetBadges(w http.ResponseWriter, r *http.Request) {
 
 	b := q.Get("b")
 	if b == "" {
-		http.Error(w, domain.ErrMissingBadgesParam.Error(), http.StatusBadRequest)
+		http.Error(w, domain.ErrMissingBadgeParam.Error(), http.StatusBadRequest)
 		return
 	}
 
