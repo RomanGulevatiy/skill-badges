@@ -20,3 +20,23 @@ go.work.sum
 
 # env file
 .env
+.env.*
+
+# git
+.git/
+.gitignore
+
+# Editor/IDE
+.idea/
+.vscode/
+.DS_Store
+
+# Docker
+Dockerfile
+docker-compose.yml
+docker-compose.*.yml
+.dockerignore
+
+# Documentation
+README.md
+LICENSE
