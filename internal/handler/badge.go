@@ -2,6 +2,8 @@ package handler
 
 import (
 	"context"
+	"errors"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -15,32 +17,33 @@ type BadgeUsecase interface {
 
 type BadgeHandler struct {
 	bUsecase BadgeUsecase
+	logger   *slog.Logger
 }
 
-func NewBadgeHandler(bUsecase BadgeUsecase) *BadgeHandler {
-	return &BadgeHandler{bUsecase: bUsecase}
+func NewBadgeHandler(bUsecase BadgeUsecase, log *slog.Logger) *BadgeHandler {
+	return &BadgeHandler{bUsecase: bUsecase, logger: log}
 }
 
 func (h *BadgeHandler) GetBadges(w http.ResponseWriter, r *http.Request) {
-	queryParam := r.URL.Query()
+	q := r.URL.Query()
 
-	b := queryParam.Get("b")
+	b := q.Get("b")
 	if b == "" {
 		http.Error(w, domain.ErrMissingBadgesParam.Error(), http.StatusBadRequest)
 		return
 	}
 
-	perline, err := strconv.Atoi(queryParam.Get("perline"))
+	perline, err := strconv.Atoi(q.Get("perline"))
 	if err != nil || perline < 1 || perline > 32 {
 		perline = 15 // Default variable for perline
 	}
 
-	gap, err := strconv.Atoi(queryParam.Get("gap"))
+	gap, err := strconv.Atoi(q.Get("gap"))
 	if err != nil || gap < 0 || gap > 100 {
 		gap = 8 // Default variable for gap
 	}
 
-	size, err := strconv.Atoi(queryParam.Get("size"))
+	size, err := strconv.Atoi(q.Get("size"))
 	if err != nil || size < 1 || size > 256 {
 		size = 48 // Default variable for size
 	}
@@ -54,7 +57,13 @@ func (h *BadgeHandler) GetBadges(w http.ResponseWriter, r *http.Request) {
 
 	output, err := h.bUsecase.GetBadges(r.Context(), input)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		switch {
+		case errors.Is(err, domain.ErrBadgeNotFound):
+			http.Error(w, err.Error(), http.StatusNotFound)
+		default:
+			h.logger.ErrorContext(r.Context(), "get badges failed", slog.Any("error", err))
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+		}
 		return
 	}
 
