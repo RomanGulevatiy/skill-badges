@@ -6,13 +6,10 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/RomanGulevatiy/skill-badges/internal/domain"
 )
-
-var contentRegex = regexp.MustCompile(`(?s)<svg[^>]*>(.*?)</svg>`)
 
 type BadgeInmemoryRepo struct {
 	badges map[string]string
@@ -33,12 +30,23 @@ func NewBadgeInmemoryRepo(dir string, log *slog.Logger) (*BadgeInmemoryRepo, err
 		}
 		svgStr := string(svg)
 
-		var content string
-		if matches := contentRegex.FindStringSubmatch(svgStr); len(matches) > 1 {
-			content = strings.TrimSpace(matches[1])
-		} else {
+		tagStart := strings.Index(svgStr, "<svg")
+		if tagStart == -1 {
 			return nil
 		}
+
+		tagOffset := strings.Index(svgStr[tagStart:], ">")
+		if tagOffset == -1 {
+			return nil
+		}
+
+		start := tagStart + tagOffset + 1
+		end := strings.LastIndex(svgStr, "</svg>")
+		if end == -1 || start >= end {
+			return nil
+		}
+
+		content := strings.TrimSpace(svgStr[start:end])
 
 		name := strings.TrimSuffix(filepath.Base(path), ".svg")
 		badges[strings.ToLower(name)] = strings.TrimSpace(content)
