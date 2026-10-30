@@ -19,7 +19,7 @@ type BadgeInmemoryRepo struct {
 	logger *slog.Logger
 }
 
-func NewBadgeInmemoryRepo(dir string, logger *slog.Logger) (*BadgeInmemoryRepo, error) {
+func NewBadgeInmemoryRepo(dir string, log *slog.Logger) (*BadgeInmemoryRepo, error) {
 	badges := make(map[string]string)
 
 	err := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
@@ -49,7 +49,7 @@ func NewBadgeInmemoryRepo(dir string, logger *slog.Logger) (*BadgeInmemoryRepo, 
 		return nil, fmt.Errorf("failed to read dir: %w", err)
 	}
 
-	return &BadgeInmemoryRepo{badges: badges, logger: logger}, nil
+	return &BadgeInmemoryRepo{badges: badges, logger: log}, nil
 }
 
 func (r *BadgeInmemoryRepo) GetBadge(ctx context.Context, name string) (string, error) {
@@ -57,7 +57,7 @@ func (r *BadgeInmemoryRepo) GetBadge(ctx context.Context, name string) (string, 
 
 	badge, ok := r.badges[lowerName]
 	if !ok {
-		r.logger.WarnContext(ctx, "badge not found in repository", slog.String("name", lowerName))
+		r.logger.DebugContext(ctx, "badge not found in repository", slog.String("name", lowerName))
 		return "", domain.ErrBadgeNotFound
 	}
 	return badge, nil
