@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	config := config.NewMust()
+	config := config.MustNew()
 
 	logger := logger.New(config.Logger)
 

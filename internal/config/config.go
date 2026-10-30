@@ -26,7 +26,7 @@ func New() (*Config, error) {
 	return &cfg, nil
 }
 
-func NewMust() *Config {
+func MustNew() *Config {
 	config, err := New()
 
 	if err != nil {
