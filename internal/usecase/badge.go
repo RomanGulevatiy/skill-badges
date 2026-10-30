@@ -27,17 +27,17 @@ func NewBadgeUsecase(bInmemoryRepo BadgeInmemoryRepo, log *slog.Logger) *BadgeUs
 
 type (
 	Input struct {
-		BadgeParam   string
-		PerlineParam int
-		GapParam     int
-		SizeParam    int
+		BadgeNames string
+		Perline    int
+		Gap        int
+		Size       int
 	}
 
 	Output string
 )
 
 func (u *BadgeUsecase) GetBadges(ctx context.Context, in Input) (Output, error) {
-	names := strings.Split(in.BadgeParam, ",")
+	names := strings.Split(in.BadgeNames, ",")
 	badges := make([]string, 0, len(names))
 
 	for _, name := range names {
@@ -62,28 +62,30 @@ func (u *BadgeUsecase) GetBadges(ctx context.Context, in Input) (Output, error) 
 	var builder strings.Builder
 	builder.Grow(len(badges)*1536 + 200)
 
-	columns := min(len(badges), in.PerlineParam)
-	rows := (len(badges) + in.PerlineParam - 1) / in.PerlineParam
+	columns := min(len(badges), in.Perline)
+	rows := (len(badges) + in.Perline - 1) / in.Perline
 
-	width := columns*in.SizeParam + (columns-1)*in.GapParam
-	height := rows*in.SizeParam + (rows-1)*in.GapParam
+	width := columns*in.Size + (columns-1)*in.Gap
+	height := rows*in.Size + (rows-1)*in.Gap
 
-	builder.WriteString(fmt.Sprintf(
+	fmt.Fprintf(
+		&builder,
 		`<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" fill="none" viewBox="0 0 %d %d">`,
 		width, height, width, height,
-	))
+	)
 
 	for i, badge := range badges {
-		row := i / in.PerlineParam
-		col := i % in.PerlineParam
+		row := i / in.Perline
+		col := i % in.Perline
 
-		x := col * (in.SizeParam + in.GapParam)
-		y := row * (in.SizeParam + in.GapParam)
+		x := col * (in.Size + in.Gap)
+		y := row * (in.Size + in.Gap)
 
-		builder.WriteString(fmt.Sprintf(
+		fmt.Fprintf(
+			&builder,
 			`<svg x="%d" y="%d" width="%d" height="%d" viewBox="0 0 256 256">`,
-			x, y, in.SizeParam, in.SizeParam,
-		))
+			x, y, in.Size, in.Size,
+		)
 		builder.WriteString(badge)
 		builder.WriteString(`</svg>`)
 	}

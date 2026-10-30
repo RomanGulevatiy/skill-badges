@@ -49,10 +49,10 @@ func (h *BadgeHandler) GetBadges(w http.ResponseWriter, r *http.Request) {
 	}
 
 	input := usecase.Input{
-		BadgeParam:   b,
-		PerlineParam: perline,
-		GapParam:     gap,
-		SizeParam:    size,
+		BadgeNames: b,
+		Perline:    perline,
+		Gap:        gap,
+		Size:       size,
 	}
 
 	output, err := h.bUsecase.GetBadges(r.Context(), input)
