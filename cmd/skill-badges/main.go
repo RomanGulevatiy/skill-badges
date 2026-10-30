@@ -5,17 +5,18 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/RomanGulevatiy/skill-badges/internal/config"
 	"github.com/RomanGulevatiy/skill-badges/internal/handler"
+	"github.com/RomanGulevatiy/skill-badges/internal/logger"
 	"github.com/RomanGulevatiy/skill-badges/internal/repository/inmemory"
 	httpserver "github.com/RomanGulevatiy/skill-badges/internal/transport/http"
 	"github.com/RomanGulevatiy/skill-badges/internal/usecase"
 )
 
 func main() {
-	opts := &slog.HandlerOptions{
-		Level: slog.LevelWarn,
-	}
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, opts))
+	config := config.NewMust()
+
+	logger := logger.New(config.Logger)
 
 	bInmemoryRepo, err := inmemory.NewBadgeInmemoryRepo("assets", logger)
 	if err != nil {
@@ -24,13 +25,12 @@ func main() {
 	}
 
 	bUsecase := usecase.NewBadgeUsecase(bInmemoryRepo, logger)
-	bHandler := handler.NewBadgeHandler(bUsecase)
+	bHandler := handler.NewBadgeHandler(bUsecase, logger)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/v1/badges", bHandler.GetBadges)
 
-	srvConfig := httpserver.NewConfig()
-	server := httpserver.New(mux, srvConfig, logger)
+	server := httpserver.New(mux, config.HTTPServer, logger)
 
 	if err := server.Run(); err != nil {
 		logger.Error("internal server error", slog.Any("error", err))
