@@ -18,10 +18,10 @@ type BadgeUsecase struct {
 	logger        *slog.Logger
 }
 
-func NewBadgeUsecase(bInmemoryRepo BadgeInmemoryRepo, logger *slog.Logger) *BadgeUsecase {
+func NewBadgeUsecase(bInmemoryRepo BadgeInmemoryRepo, log *slog.Logger) *BadgeUsecase {
 	return &BadgeUsecase{
 		bInmemoryRepo: bInmemoryRepo,
-		logger:        logger,
+		logger:        log,
 	}
 }
 
@@ -48,7 +48,7 @@ func (u *BadgeUsecase) GetBadges(ctx context.Context, in Input) (Output, error) 
 
 		badge, err := u.bInmemoryRepo.GetBadge(ctx, trimmed)
 		if err != nil {
-			u.logger.WarnContext(ctx, "failed to get badge", slog.String("name", trimmed), slog.Any("error", err))
+			u.logger.DebugContext(ctx, "failed to get badge", slog.String("name", trimmed), slog.Any("error", err))
 			continue
 		}
 
@@ -89,11 +89,6 @@ func (u *BadgeUsecase) GetBadges(ctx context.Context, in Input) (Output, error) 
 	}
 
 	builder.WriteString(`</svg>`)
-
-	u.logger.InfoContext(ctx, "badges successfully generated",
-		slog.Int("total_requested", len(names)),
-		slog.Int("rendered_count", len(badges)),
-	)
 
 	return Output(builder.String()), nil
 }
