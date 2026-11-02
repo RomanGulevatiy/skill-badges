@@ -8,6 +8,7 @@ import (
 	"github.com/RomanGulevatiy/skill-badges/internal/config"
 	"github.com/RomanGulevatiy/skill-badges/internal/handler"
 	"github.com/RomanGulevatiy/skill-badges/internal/logger"
+	"github.com/RomanGulevatiy/skill-badges/internal/middleware"
 	"github.com/RomanGulevatiy/skill-badges/internal/repository/inmemory"
 	httpserver "github.com/RomanGulevatiy/skill-badges/internal/transport/http"
 	"github.com/RomanGulevatiy/skill-badges/internal/usecase"
@@ -30,7 +31,10 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/v1/badges", bHandler.GetBadges)
 
-	server := httpserver.New(mux, config.HTTPServer, logger)
+	logMiddleware := middleware.RequestLogger(logger)
+	handler := logMiddleware(mux)
+
+	server := httpserver.New(handler, config.HTTPServer, logger)
 
 	if err := server.Run(); err != nil {
 		logger.Error("internal server error", slog.Any("error", err))
