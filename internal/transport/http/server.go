@@ -11,16 +11,16 @@ import (
 )
 
 type HTTPServer struct {
-	mux    *http.ServeMux
-	config Config
-	logger *slog.Logger
+	handler http.Handler
+	config  Config
+	logger  *slog.Logger
 }
 
-func New(mux *http.ServeMux, cfg Config, log *slog.Logger) *HTTPServer {
+func New(h http.Handler, cfg Config, log *slog.Logger) *HTTPServer {
 	return &HTTPServer{
-		mux:    mux,
-		config: cfg,
-		logger: log,
+		handler: h,
+		config:  cfg,
+		logger:  log,
 	}
 }
 
@@ -30,7 +30,7 @@ func (s *HTTPServer) Run() error {
 
 	server := &http.Server{
 		Addr:              s.config.Addr,
-		Handler:           s.mux,
+		Handler:           s.handler,
 		ReadHeaderTimeout: s.config.ReadHeaderTimeout,
 		ReadTimeout:       s.config.ReadTimeout,
 		WriteTimeout:      s.config.WriteTimeout,
