@@ -10,7 +10,7 @@ import (
 )
 
 type BadgeInmemoryRepo interface {
-	GetBadge(ctx context.Context, name string) (string, error)
+	GetBadge(ctx context.Context, name, theme string) (string, error)
 }
 
 type BadgeUsecase struct {
@@ -29,6 +29,7 @@ type (
 	Input struct {
 		BadgeNames string
 		Perline    int
+		Theme      string
 		Gap        int
 		Size       int
 	}
@@ -46,7 +47,7 @@ func (u *BadgeUsecase) GetBadges(ctx context.Context, in Input) (Output, error) 
 			continue
 		}
 
-		badge, err := u.bInmemoryRepo.GetBadge(ctx, trimmed)
+		badge, err := u.bInmemoryRepo.GetBadge(ctx, trimmed, in.Theme)
 		if err != nil {
 			u.logger.DebugContext(ctx, "failed to get badge", slog.String("name", trimmed), slog.Any("error", err))
 			continue
