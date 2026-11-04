@@ -47,9 +47,11 @@ func (u *BadgeUsecase) GetBadges(ctx context.Context, in Input) (Output, error) 
 			continue
 		}
 
-		badge, err := u.bInmemoryRepo.GetBadge(ctx, trimmed, in.Theme)
+		canonicalName := domain.ResolveAlias(trimmed)
+
+		badge, err := u.bInmemoryRepo.GetBadge(ctx, canonicalName, in.Theme)
 		if err != nil {
-			u.logger.DebugContext(ctx, "failed to get badge", slog.String("name", trimmed), slog.Any("error", err))
+			u.logger.DebugContext(ctx, "failed to get badge", slog.String("name", canonicalName), slog.Any("error", err))
 			continue
 		}
 
