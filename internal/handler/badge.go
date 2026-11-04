@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"errors"
+	"io"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -12,9 +13,10 @@ import (
 )
 
 const (
-	defaultPerline = 15
-	defaultGap     = 8
-	defaultSize    = 48
+	maxBadgeParamLen = 1024
+	defaultPerline   = 15
+	defaultGap       = 8
+	defaultSize      = 48
 )
 
 type BadgeUsecase interface {
@@ -36,6 +38,10 @@ func (h *BadgeHandler) GetBadges(w http.ResponseWriter, r *http.Request) {
 	b := q.Get("b")
 	if b == "" {
 		http.Error(w, domain.ErrMissingBadgeParam.Error(), http.StatusBadRequest)
+		return
+	}
+	if len(b) > maxBadgeParamLen {
+		http.Error(w, domain.ErrBadgeParamTooLong.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -80,6 +86,10 @@ func (h *BadgeHandler) GetBadges(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "image/svg+xml")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(output))
+	w.Header().Set("Cache-Control", "public, max-age=86400")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'")
+	if _, err := io.WriteString(w, string(output)); err != nil {
+		h.logger.WarnContext(r.Context(), "write response failed", slog.Any("error", err))
+	}
 }
