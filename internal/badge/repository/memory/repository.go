@@ -11,13 +11,13 @@ import (
 	"github.com/RomanGulevatiy/skill-badges/internal/badge/domain"
 )
 
-type BadgeRepository struct {
+type Repository struct {
 	themedBadges map[string]string
 	badgeNames   map[string]struct{}
 	logger       *slog.Logger
 }
 
-func NewBadgeRepository(dir string, log *slog.Logger) (*BadgeRepository, error) {
+func New(dir string, log *slog.Logger) (*Repository, error) {
 	badges := make(map[string]string)
 	names := make(map[string]struct{})
 
@@ -71,10 +71,10 @@ func NewBadgeRepository(dir string, log *slog.Logger) (*BadgeRepository, error) 
 		return nil, fmt.Errorf("failed to read dir: %w", err)
 	}
 
-	return &BadgeRepository{themedBadges: badges, badgeNames: names, logger: log}, nil
+	return &Repository{themedBadges: badges, badgeNames: names, logger: log}, nil
 }
 
-func (r *BadgeRepository) GetBadge(ctx context.Context, name, theme string) (string, error) {
+func (r *Repository) Get(ctx context.Context, name, theme string) (string, error) {
 	lowerName := strings.ToLower(name)
 
 	if _, ok := r.badgeNames[lowerName]; !ok {
