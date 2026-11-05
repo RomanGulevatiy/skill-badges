@@ -9,17 +9,17 @@ import (
 	"github.com/RomanGulevatiy/skill-badges/internal/badge/domain"
 )
 
-type BadgeRepository interface {
-	GetBadge(ctx context.Context, name, theme string) (string, error)
+type Repository interface {
+	Get(ctx context.Context, name, theme string) (string, error)
 }
 
-type BadgeUsecase struct {
-	bRepo  BadgeRepository
+type Usecase struct {
+	bRepo  Repository
 	logger *slog.Logger
 }
 
-func NewBadgeUsecase(bRepo BadgeRepository, log *slog.Logger) *BadgeUsecase {
-	return &BadgeUsecase{
+func New(bRepo Repository, log *slog.Logger) *Usecase {
+	return &Usecase{
 		bRepo:  bRepo,
 		logger: log,
 	}
@@ -37,7 +37,7 @@ type (
 	Output string
 )
 
-func (u *BadgeUsecase) GetBadges(ctx context.Context, in Input) (Output, error) {
+func (u *Usecase) GetBadges(ctx context.Context, in Input) (Output, error) {
 	names := strings.Split(in.BadgeNames, ",")
 	badges := make([]string, 0, len(names))
 
@@ -49,7 +49,7 @@ func (u *BadgeUsecase) GetBadges(ctx context.Context, in Input) (Output, error) 
 
 		canonicalName := domain.ResolveAlias(trimmed)
 
-		badge, err := u.bRepo.GetBadge(ctx, canonicalName, in.Theme)
+		badge, err := u.bRepo.Get(ctx, canonicalName, in.Theme)
 		if err != nil {
 			u.logger.DebugContext(ctx, "failed to get badge", slog.String("name", canonicalName), slog.Any("error", err))
 			continue
