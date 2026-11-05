@@ -5,39 +5,38 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/RomanGulevatiy/skill-badges/internal/badge/handler"
+	"github.com/RomanGulevatiy/skill-badges/internal/badge/repository/memory"
+	"github.com/RomanGulevatiy/skill-badges/internal/badge/usecase"
 	"github.com/RomanGulevatiy/skill-badges/internal/config"
-	"github.com/RomanGulevatiy/skill-badges/internal/handler"
 	"github.com/RomanGulevatiy/skill-badges/internal/logger"
 	"github.com/RomanGulevatiy/skill-badges/internal/middleware"
-	"github.com/RomanGulevatiy/skill-badges/internal/repository/inmemory"
 	httpserver "github.com/RomanGulevatiy/skill-badges/internal/transport/http"
-	"github.com/RomanGulevatiy/skill-badges/internal/usecase"
 )
 
 func main() {
-	config := config.MustNew()
+	cfg := config.MustNew()
+	log := logger.New(cfg.Logger)
 
-	logger := logger.New(config.Logger)
-
-	bInmemoryRepo, err := inmemory.NewBadgeInmemoryRepo("assets", logger)
+	bRepo, err := memory.NewBadgeRepository("assets", log)
 	if err != nil {
-		logger.Error("failed to init badge in-memory repo", slog.Any("error", err))
+		log.Error("failed to init badge repository", slog.Any("error", err))
 		os.Exit(1)
 	}
 
-	bUsecase := usecase.NewBadgeUsecase(bInmemoryRepo, logger)
-	bHandler := handler.NewBadgeHandler(bUsecase, logger)
+	bUsecase := usecase.NewBadgeUsecase(bRepo, log)
+	bHandler := handler.NewBadgeHandler(bUsecase, log)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/v1/badges", bHandler.GetBadges)
 
-	logMiddleware := middleware.RequestLogger(logger)
-	handler := logMiddleware(mux)
+	logMiddleware := middleware.RequestLogger(log)
+	h := logMiddleware(mux)
 
-	server := httpserver.New(handler, config.HTTPServer, logger)
+	server := httpserver.New(h, cfg.HTTPServer, log)
 
 	if err := server.Run(); err != nil {
-		logger.Error("internal server error", slog.Any("error", err))
+		log.Error("internal server error", slog.Any("error", err))
 		os.Exit(1)
 	}
 }
