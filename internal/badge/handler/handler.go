@@ -92,7 +92,7 @@ func (h *Handler) GetBadges(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "public, max-age=86400")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'")
-	if _, err := io.WriteString(w, string(output)); err != nil {
+	if _, err := io.WriteString(w, output.SVG); err != nil {
 		h.logger.WarnContext(r.Context(), "write response failed", slog.Any("error", err))
 	}
 }
