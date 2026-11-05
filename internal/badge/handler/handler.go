@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/RomanGulevatiy/skill-badges/internal/badge/domain"
 	"github.com/RomanGulevatiy/skill-badges/internal/badge/usecase"
@@ -45,13 +46,15 @@ func (h *Handler) GetBadges(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	names := strings.Split(b, ",")
+
 	perline, err := strconv.Atoi(q.Get("perline"))
 	if err != nil || perline < 1 || perline > 32 {
 		perline = defaultPerline
 	}
 
 	theme := q.Get("theme")
-	if _, ok := domain.Themes[theme]; !ok {
+	if !domain.IsValidTheme(theme) {
 		theme = domain.DefaultTheme
 	}
 
@@ -66,11 +69,11 @@ func (h *Handler) GetBadges(w http.ResponseWriter, r *http.Request) {
 	}
 
 	input := usecase.Input{
-		BadgeNames: b,
-		Theme:      theme,
-		Perline:    perline,
-		Gap:        gap,
-		Size:       size,
+		Names:   names,
+		Theme:   theme,
+		Perline: perline,
+		Gap:     gap,
+		Size:    size,
 	}
 
 	output, err := h.bUsecase.GetBadges(r.Context(), input)
