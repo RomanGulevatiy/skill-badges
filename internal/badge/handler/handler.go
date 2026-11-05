@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/RomanGulevatiy/skill-badges/internal/domain"
-	"github.com/RomanGulevatiy/skill-badges/internal/usecase"
+	"github.com/RomanGulevatiy/skill-badges/internal/badge/domain"
+	"github.com/RomanGulevatiy/skill-badges/internal/badge/usecase"
 )
 
 const (
