@@ -2,7 +2,7 @@ package domain
 
 import "strings"
 
-var Aliases = map[string]string{
+var aliases = map[string]string{
 	"go":       "golang",
 	"js":       "javascript",
 	"ts":       "typescript",
@@ -15,7 +15,7 @@ var Aliases = map[string]string{
 func ResolveAlias(name string) string {
 	lowerName := strings.ToLower(name)
 
-	if canonical, ok := Aliases[lowerName]; ok {
+	if canonical, ok := aliases[lowerName]; ok {
 		return canonical
 	}
 	return lowerName
