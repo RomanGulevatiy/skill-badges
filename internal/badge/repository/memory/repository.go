@@ -56,7 +56,7 @@ func New(dir string, log *slog.Logger) (*Repository, error) {
 		badges[lowerThemedName] = strings.TrimSpace(content)
 
 		name := lowerThemedName
-		for theme := range domain.Themes {
+		for _, theme := range domain.AvailableThemes() {
 			if before, found := strings.CutSuffix(name, "-"+theme); found {
 				name = before
 				break
