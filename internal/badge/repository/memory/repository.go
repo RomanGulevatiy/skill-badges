@@ -1,4 +1,4 @@
-package inmemory
+package memory
 
 import (
 	"context"
@@ -8,16 +8,16 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/RomanGulevatiy/skill-badges/internal/domain"
+	"github.com/RomanGulevatiy/skill-badges/internal/badge/domain"
 )
 
-type BadgeInmemoryRepo struct {
+type BadgeRepository struct {
 	themedBadges map[string]string
 	badgeNames   map[string]struct{}
 	logger       *slog.Logger
 }
 
-func NewBadgeInmemoryRepo(dir string, log *slog.Logger) (*BadgeInmemoryRepo, error) {
+func NewBadgeRepository(dir string, log *slog.Logger) (*BadgeRepository, error) {
 	badges := make(map[string]string)
 	names := make(map[string]struct{})
 
@@ -71,10 +71,10 @@ func NewBadgeInmemoryRepo(dir string, log *slog.Logger) (*BadgeInmemoryRepo, err
 		return nil, fmt.Errorf("failed to read dir: %w", err)
 	}
 
-	return &BadgeInmemoryRepo{themedBadges: badges, badgeNames: names, logger: log}, nil
+	return &BadgeRepository{themedBadges: badges, badgeNames: names, logger: log}, nil
 }
 
-func (r *BadgeInmemoryRepo) GetBadge(ctx context.Context, name, theme string) (string, error) {
+func (r *BadgeRepository) GetBadge(ctx context.Context, name, theme string) (string, error) {
 	lowerName := strings.ToLower(name)
 
 	if _, ok := r.badgeNames[lowerName]; !ok {
