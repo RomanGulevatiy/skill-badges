@@ -19,20 +19,20 @@ const (
 	defaultSize      = 48
 )
 
-type BadgeUsecase interface {
+type Usecase interface {
 	GetBadges(ctx context.Context, in usecase.Input) (usecase.Output, error)
 }
 
-type BadgeHandler struct {
-	bUsecase BadgeUsecase
+type Handler struct {
+	bUsecase Usecase
 	logger   *slog.Logger
 }
 
-func NewBadgeHandler(bUsecase BadgeUsecase, log *slog.Logger) *BadgeHandler {
-	return &BadgeHandler{bUsecase: bUsecase, logger: log}
+func New(bUsecase Usecase, log *slog.Logger) *Handler {
+	return &Handler{bUsecase: bUsecase, logger: log}
 }
 
-func (h *BadgeHandler) GetBadges(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetBadges(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 
 	b := q.Get("b")
