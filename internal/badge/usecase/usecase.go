@@ -6,22 +6,22 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/RomanGulevatiy/skill-badges/internal/domain"
+	"github.com/RomanGulevatiy/skill-badges/internal/badge/domain"
 )
 
-type BadgeInmemoryRepo interface {
+type BadgeRepository interface {
 	GetBadge(ctx context.Context, name, theme string) (string, error)
 }
 
 type BadgeUsecase struct {
-	bInmemoryRepo BadgeInmemoryRepo
-	logger        *slog.Logger
+	bRepo  BadgeRepository
+	logger *slog.Logger
 }
 
-func NewBadgeUsecase(bInmemoryRepo BadgeInmemoryRepo, log *slog.Logger) *BadgeUsecase {
+func NewBadgeUsecase(bRepo BadgeRepository, log *slog.Logger) *BadgeUsecase {
 	return &BadgeUsecase{
-		bInmemoryRepo: bInmemoryRepo,
-		logger:        log,
+		bRepo:  bRepo,
+		logger: log,
 	}
 }
 
@@ -49,7 +49,7 @@ func (u *BadgeUsecase) GetBadges(ctx context.Context, in Input) (Output, error) 
 
 		canonicalName := domain.ResolveAlias(trimmed)
 
-		badge, err := u.bInmemoryRepo.GetBadge(ctx, canonicalName, in.Theme)
+		badge, err := u.bRepo.GetBadge(ctx, canonicalName, in.Theme)
 		if err != nil {
 			u.logger.DebugContext(ctx, "failed to get badge", slog.String("name", canonicalName), slog.Any("error", err))
 			continue
