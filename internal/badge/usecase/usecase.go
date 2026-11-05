@@ -27,21 +27,20 @@ func New(bRepo Repository, log *slog.Logger) *Usecase {
 
 type (
 	Input struct {
-		BadgeNames string
-		Perline    int
-		Theme      string
-		Gap        int
-		Size       int
+		Names   []string
+		Perline int
+		Theme   string
+		Gap     int
+		Size    int
 	}
 
 	Output string
 )
 
 func (u *Usecase) GetBadges(ctx context.Context, in Input) (Output, error) {
-	names := strings.Split(in.BadgeNames, ",")
-	badges := make([]string, 0, len(names))
+	badges := make([]string, 0, len(in.Names))
 
-	for _, name := range names {
+	for _, name := range in.Names {
 		trimmed := strings.TrimSpace(name)
 		if trimmed == "" {
 			continue
