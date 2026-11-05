@@ -25,17 +25,17 @@ func New(bRepo Repository, log *slog.Logger) *Usecase {
 	}
 }
 
-type (
-	Input struct {
-		Names   []string
-		Perline int
-		Theme   string
-		Gap     int
-		Size    int
-	}
+type Input struct {
+	Names   []string
+	Perline int
+	Theme   string
+	Gap     int
+	Size    int
+}
 
-	Output string
-)
+type Output struct {
+	SVG string
+}
 
 func (u *Usecase) GetBadges(ctx context.Context, in Input) (Output, error) {
 	badges := make([]string, 0, len(in.Names))
@@ -58,7 +58,7 @@ func (u *Usecase) GetBadges(ctx context.Context, in Input) (Output, error) {
 	}
 
 	if len(badges) == 0 {
-		return "", domain.ErrBadgeNotFound
+		return Output{}, domain.ErrBadgeNotFound
 	}
 
 	var builder strings.Builder
@@ -94,5 +94,5 @@ func (u *Usecase) GetBadges(ctx context.Context, in Input) (Output, error) {
 
 	builder.WriteString(`</svg>`)
 
-	return Output(builder.String()), nil
+	return Output{SVG: builder.String()}, nil
 }
