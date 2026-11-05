@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/RomanGulevatiy/skill-badges/internal/badge/handler"
-	"github.com/RomanGulevatiy/skill-badges/internal/badge/repository/memory"
-	"github.com/RomanGulevatiy/skill-badges/internal/badge/usecase"
+	badgehandler "github.com/RomanGulevatiy/skill-badges/internal/badge/handler"
+	badgememory "github.com/RomanGulevatiy/skill-badges/internal/badge/repository/memory"
+	badgeusecase "github.com/RomanGulevatiy/skill-badges/internal/badge/usecase"
 	"github.com/RomanGulevatiy/skill-badges/internal/config"
 	"github.com/RomanGulevatiy/skill-badges/internal/logger"
 	"github.com/RomanGulevatiy/skill-badges/internal/middleware"
@@ -18,14 +18,14 @@ func main() {
 	cfg := config.MustNew()
 	log := logger.New(cfg.Logger)
 
-	bRepo, err := memory.NewBadgeRepository("assets", log)
+	bRepo, err := badgememory.New("assets", log)
 	if err != nil {
 		log.Error("failed to init badge repository", slog.Any("error", err))
 		os.Exit(1)
 	}
 
-	bUsecase := usecase.NewBadgeUsecase(bRepo, log)
-	bHandler := handler.NewBadgeHandler(bUsecase, log)
+	bUsecase := badgeusecase.New(bRepo, log)
+	bHandler := badgehandler.New(bUsecase, log)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/v1/badges", bHandler.GetBadges)
