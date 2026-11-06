@@ -13,12 +13,7 @@ import (
 	"github.com/RomanGulevatiy/skill-badges/internal/badge/usecase"
 )
 
-const (
-	maxBadgeParamLen = 1024
-	defaultPerline   = 15
-	defaultGap       = 8
-	defaultSize      = 48
-)
+const maxBadgeParamLen = 1024
 
 type Usecase interface {
 	GetBadges(ctx context.Context, in usecase.Input) (usecase.Output, error)
@@ -47,33 +42,15 @@ func (h *Handler) GetBadges(w http.ResponseWriter, r *http.Request) {
 	}
 
 	names := strings.Split(b, ",")
-
-	perline, err := strconv.Atoi(q.Get("perline"))
-	if err != nil || perline < 1 || perline > 32 {
-		perline = defaultPerline
-	}
-
 	theme := q.Get("theme")
-	if !domain.IsValidTheme(theme) {
-		theme = domain.DefaultTheme
-	}
-
-	gap, err := strconv.Atoi(q.Get("gap"))
-	if err != nil || gap < 0 || gap > 100 {
-		gap = defaultGap
-	}
-
-	size, err := strconv.Atoi(q.Get("size"))
-	if err != nil || size < 1 || size > 256 {
-		size = defaultSize
-	}
+	perline, _ := strconv.Atoi(q.Get("perline"))
+	size := q.Get("size")
 
 	input := usecase.Input{
-		Names:   names,
-		Theme:   theme,
-		Perline: perline,
-		Gap:     gap,
-		Size:    size,
+		Names:      names,
+		Theme:      theme,
+		Perline:    perline,
+		SizePreset: size,
 	}
 
 	output, err := h.bUsecase.GetBadges(r.Context(), input)
