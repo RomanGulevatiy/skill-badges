@@ -26,11 +26,10 @@ func New(bRepo Repository, log *slog.Logger) *Usecase {
 }
 
 type Input struct {
-	Names   []string
-	Perline int
-	Theme   string
-	Gap     int
-	Size    int
+	Names      []string
+	Perline    int
+	Theme      string
+	SizePreset string
 }
 
 type Output struct {
@@ -40,15 +39,16 @@ type Output struct {
 func (u *Usecase) GetBadges(ctx context.Context, in Input) (Output, error) {
 	badges := make([]string, 0, len(in.Names))
 
+	theme := domain.ValidateTheme(in.Theme)
+	perline := domain.ValidatePerline(in.Perline)
+
 	for _, name := range in.Names {
-		trimmed := strings.TrimSpace(name)
-		if trimmed == "" {
+		canonicalName := domain.ResolveAlias(name)
+		if canonicalName == "" {
 			continue
 		}
 
-		canonicalName := domain.ResolveAlias(trimmed)
-
-		badge, err := u.bRepo.Get(ctx, canonicalName, in.Theme)
+		badge, err := u.bRepo.Get(ctx, canonicalName, theme)
 		if err != nil {
 			u.logger.DebugContext(ctx, "failed to get badge", slog.String("name", canonicalName), slog.Any("error", err))
 			continue
@@ -64,11 +64,13 @@ func (u *Usecase) GetBadges(ctx context.Context, in Input) (Output, error) {
 	var builder strings.Builder
 	builder.Grow(len(badges)*1536 + 200)
 
-	columns := min(len(badges), in.Perline)
-	rows := (len(badges) + in.Perline - 1) / in.Perline
+	columns := min(len(badges), perline)
+	rows := (len(badges) + perline - 1) / perline
 
-	width := columns*in.Size + (columns-1)*in.Gap
-	height := rows*in.Size + (rows-1)*in.Gap
+	dim := domain.GetDimensions(in.SizePreset)
+
+	width := columns*dim.Size + (columns-1)*dim.Gap
+	height := rows*dim.Size + (rows-1)*dim.Gap
 
 	fmt.Fprintf(
 		&builder,
@@ -77,16 +79,16 @@ func (u *Usecase) GetBadges(ctx context.Context, in Input) (Output, error) {
 	)
 
 	for i, badge := range badges {
-		row := i / in.Perline
-		col := i % in.Perline
+		row := i / perline
+		col := i % perline
 
-		x := col * (in.Size + in.Gap)
-		y := row * (in.Size + in.Gap)
+		x := col * (dim.Size + dim.Gap)
+		y := row * (dim.Size + dim.Gap)
 
 		fmt.Fprintf(
 			&builder,
 			`<svg x="%d" y="%d" width="%d" height="%d" viewBox="0 0 256 256">`,
-			x, y, in.Size, in.Size,
+			x, y, dim.Size, dim.Size,
 		)
 		builder.WriteString(badge)
 		builder.WriteString(`</svg>`)
