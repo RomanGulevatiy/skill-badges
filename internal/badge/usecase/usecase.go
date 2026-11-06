@@ -25,76 +25,64 @@ func New(bRepo Repository, log *slog.Logger) *Usecase {
 	}
 }
 
-type Input struct {
-	Names      []string
-	Perline    int
-	Theme      string
-	SizePreset string
+type GetBadgesInput struct {
+	Badges  []string
+	Perline int
+	Theme   string
+	Dim     domain.Dimensions
 }
 
-type Output struct {
-	SVG string
-}
+func (u *Usecase) GetBadges(ctx context.Context, in GetBadgesInput) (string, error) {
+	badges := make([]string, 0, len(in.Badges))
 
-func (u *Usecase) GetBadges(ctx context.Context, in Input) (Output, error) {
-	badges := make([]string, 0, len(in.Names))
-
-	theme := domain.ValidateTheme(in.Theme)
-	perline := domain.ValidatePerline(in.Perline)
-
-	for _, name := range in.Names {
-		canonicalName := domain.ResolveAlias(name)
-		if canonicalName == "" {
-			continue
-		}
-
-		badge, err := u.bRepo.Get(ctx, canonicalName, theme)
+	for _, badge := range in.Badges {
+		b, err := u.bRepo.Get(ctx, badge, in.Theme)
 		if err != nil {
-			u.logger.DebugContext(ctx, "failed to get badge", slog.String("name", canonicalName), slog.Any("error", err))
+			u.logger.DebugContext(ctx, "failed to get badge", slog.String("badge", badge), slog.Any("error", err))
 			continue
 		}
-
-		badges = append(badges, badge)
+		badges = append(badges, b)
 	}
 
 	if len(badges) == 0 {
-		return Output{}, domain.ErrBadgeNotFound
+		return "", domain.ErrBadgeNotFound
 	}
 
-	var builder strings.Builder
-	builder.Grow(len(badges)*1536 + 200)
+	return render(badges, in.Perline, in.Dim), nil
+}
 
+func render(badges []string, perline int, dim domain.Dimensions) string {
 	columns := min(len(badges), perline)
 	rows := (len(badges) + perline - 1) / perline
-
-	dim := domain.GetDimensions(in.SizePreset)
 
 	width := columns*dim.Size + (columns-1)*dim.Gap
 	height := rows*dim.Size + (rows-1)*dim.Gap
 
-	fmt.Fprintf(
-		&builder,
+	capacity := 256
+	for _, badge := range badges {
+		capacity += len(badge) + 90
+	}
+
+	var b strings.Builder
+	b.Grow(capacity)
+
+	fmt.Fprintf(&b,
 		`<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" fill="none" viewBox="0 0 %d %d">`,
 		width, height, width, height,
 	)
 
 	for i, badge := range badges {
-		row := i / perline
-		col := i % perline
+		x := (i % perline) * (dim.Size + dim.Gap)
+		y := (i / perline) * (dim.Size + dim.Gap)
 
-		x := col * (dim.Size + dim.Gap)
-		y := row * (dim.Size + dim.Gap)
-
-		fmt.Fprintf(
-			&builder,
+		fmt.Fprintf(&b,
 			`<svg x="%d" y="%d" width="%d" height="%d" viewBox="0 0 256 256">`,
 			x, y, dim.Size, dim.Size,
 		)
-		builder.WriteString(badge)
-		builder.WriteString(`</svg>`)
+		b.WriteString(badge)
+		b.WriteString(`</svg>`)
 	}
 
-	builder.WriteString(`</svg>`)
-
-	return Output{SVG: builder.String()}, nil
+	b.WriteString(`</svg>`)
+	return b.String()
 }
