@@ -1,15 +1,21 @@
 package domain
 
-const DefaultTheme = "dark"
+import "strings"
+
+const defaultTheme = "dark"
 
 var themes = map[string]struct{}{
 	"dark":  {},
 	"light": {},
 }
 
-func IsValidTheme(theme string) (ok bool) {
-	_, ok = themes[theme]
-	return
+func ValidateTheme(theme string) string {
+	cleanTheme := strings.ToLower(strings.TrimSpace(theme))
+
+	if _, ok := themes[cleanTheme]; ok {
+		return cleanTheme
+	}
+	return defaultTheme
 }
 
 func AvailableThemes() []string {
