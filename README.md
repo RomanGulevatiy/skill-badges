@@ -1,8 +1,8 @@
 # Skill Badges
 
-<!-- [![Go][go-shield]][go-url]
+[![Go][go-shield]][go-url]
 [![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url] -->
+[![MIT License][license-shield]][license-url]
 
 High-performance, lightweight HTTP service written in Go for dynamically generating customized SVG skill badge grids for GitHub profiles or personal websites.
 
@@ -35,9 +35,9 @@ High-performance, lightweight HTTP service written in Go for dynamically generat
 
 Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
-<!-- [go-shield]: https://img.shields.io/github/go-mod/go-version/RomanGulevatiy/skill-badges
+[go-shield]: https://img.shields.io/github/go-mod/go-version/RomanGulevatiy/skill-badges
 [go-url]: https://github.com/RomanGulevatiy/skill-badges/blob/main/go.mod
 [issues-shield]: https://img.shields.io/github/issues/RomanGulevatiy/skill-badges?label=Issues
 [issues-url]: https://github.com/RomanGulevatiy/skill-badges/issues
 [license-shield]: https://img.shields.io/github/license/RomanGulevatiy/skill-badges?label=License
-[license-url]: https://github.com/RomanGulevatiy/skill-badges/blob/main/LICENSE -->
+[license-url]: https://github.com/RomanGulevatiy/skill-badges/blob/main/LICENSE
