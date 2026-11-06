@@ -48,7 +48,7 @@ func New(dir string, log *slog.Logger) (*Repository, error) {
 			return nil
 		}
 
-		content := strings.TrimSpace(svgStr[start:end])
+		content := svgStr[start:end]
 
 		themedName := strings.TrimSuffix(filepath.Base(path), ".svg")
 		lowerThemedName := strings.ToLower(themedName)
@@ -75,22 +75,20 @@ func New(dir string, log *slog.Logger) (*Repository, error) {
 }
 
 func (r *Repository) Get(ctx context.Context, name, theme string) (string, error) {
-	lowerName := strings.ToLower(name)
-
-	if _, ok := r.badgeNames[lowerName]; !ok {
-		r.logger.DebugContext(ctx, "invalid or explicitly suffixed badge name requested", slog.String("name", lowerName))
+	if _, ok := r.badgeNames[name]; !ok {
+		r.logger.DebugContext(ctx, "invalid or explicitly suffixed badge name requested", slog.String("name", name))
 		return "", domain.ErrBadgeNotFound
 	}
 
-	themeKey := lowerName + "-" + theme
+	themeKey := name + "-" + theme
 	if badge, ok := r.themedBadges[themeKey]; ok {
 		return badge, nil
 	}
 
-	if badge, ok := r.themedBadges[lowerName]; ok {
+	if badge, ok := r.themedBadges[name]; ok {
 		return badge, nil
 	}
 
-	r.logger.DebugContext(ctx, "badge not found in repository", slog.String("name", lowerName))
+	r.logger.DebugContext(ctx, "badge not found in repository", slog.String("name", name))
 	return "", domain.ErrBadgeNotFound
 }
