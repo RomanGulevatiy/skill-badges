@@ -10,19 +10,19 @@ var themes = map[string]struct{}{
 }
 
 func ValidateTheme(theme string) string {
-	cleanTheme := strings.ToLower(strings.TrimSpace(theme))
+	theme = strings.ToLower(strings.TrimSpace(theme))
 
-	if _, ok := themes[cleanTheme]; ok {
-		return cleanTheme
+	if _, ok := themes[theme]; ok {
+		return theme
 	}
 	return defaultTheme
 }
 
-func AvailableThemes() []string {
-	list := make([]string, 0, len(themes))
-
+func TrimThemeSuffix(name string) string {
 	for t := range themes {
-		list = append(list, t)
+		if before, found := strings.CutSuffix(name, "-"+t); found {
+			return before
+		}
 	}
-	return list
+	return name
 }
