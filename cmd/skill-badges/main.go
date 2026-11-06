@@ -35,7 +35,7 @@ func main() {
 
 	server := httpserver.New(h, cfg.HTTPServer, log)
 
-	if err := server.Run(); err != nil {
+	if err = server.Run(); err != nil {
 		log.Error("internal server error", slog.Any("error", err))
 		os.Exit(1)
 	}
