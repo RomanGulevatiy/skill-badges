@@ -13,10 +13,10 @@ var aliases = map[string]string{
 }
 
 func ResolveAlias(name string) string {
-	lowerName := strings.ToLower(name)
+	clearName := strings.ToLower(strings.TrimSpace(name))
 
-	if canonical, ok := aliases[lowerName]; ok {
+	if canonical, ok := aliases[clearName]; ok {
 		return canonical
 	}
-	return lowerName
+	return clearName
 }
