@@ -6,17 +6,13 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"strconv"
-	"strings"
 
 	"github.com/RomanGulevatiy/skill-badges/internal/badge/domain"
 	"github.com/RomanGulevatiy/skill-badges/internal/badge/usecase"
 )
 
-const maxBadgeParamLen = 1024
-
 type Usecase interface {
-	GetBadges(ctx context.Context, in usecase.Input) (usecase.Output, error)
+	GetBadges(ctx context.Context, in usecase.GetBadgesInput) (string, error)
 }
 
 type Handler struct {
@@ -31,29 +27,21 @@ func New(bUsecase Usecase, log *slog.Logger) *Handler {
 func (h *Handler) GetBadges(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 
-	b := q.Get("b")
-	if b == "" {
-		http.Error(w, domain.ErrMissingBadgeParam.Error(), http.StatusBadRequest)
+	req := GetBadgesRequest{
+		Badges:  q.Get("b"),
+		Perline: q.Get("perline"),
+		Theme:   q.Get("theme"),
+		Size:    q.Get("size"),
+	}
+
+	in, err := req.Validate()
+	if err != nil {
+		h.logger.DebugContext(r.Context(), "invalid query parameters", slog.String("error", err.Error()))
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if len(b) > maxBadgeParamLen {
-		http.Error(w, domain.ErrBadgeParamTooLong.Error(), http.StatusBadRequest)
-		return
-	}
 
-	names := strings.Split(b, ",")
-	theme := q.Get("theme")
-	perline, _ := strconv.Atoi(q.Get("perline"))
-	size := q.Get("size")
-
-	input := usecase.Input{
-		Names:      names,
-		Theme:      theme,
-		Perline:    perline,
-		SizePreset: size,
-	}
-
-	output, err := h.bUsecase.GetBadges(r.Context(), input)
+	out, err := h.bUsecase.GetBadges(r.Context(), *in)
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrBadgeNotFound):
@@ -69,7 +57,7 @@ func (h *Handler) GetBadges(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "public, max-age=86400")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'")
-	if _, err := io.WriteString(w, output.SVG); err != nil {
+	if _, err = io.WriteString(w, out); err != nil {
 		h.logger.WarnContext(r.Context(), "write response failed", slog.Any("error", err))
 	}
 }
