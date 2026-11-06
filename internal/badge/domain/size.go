@@ -17,9 +17,9 @@ type Dimensions struct {
 }
 
 func GetDimensions(preset string) Dimensions {
-	cleanPreset := strings.ToLower(strings.TrimSpace(preset))
+	preset = strings.ToLower(strings.TrimSpace(preset))
 
-	if d, ok := sizePresets[cleanPreset]; ok {
+	if d, ok := sizePresets[preset]; ok {
 		return d
 	}
 	return sizePresets[defaultSizePreset]
