@@ -50,19 +50,10 @@ func New(dir string, log *slog.Logger) (*Repository, error) {
 
 		content := svgStr[start:end]
 
-		themedName := strings.TrimSuffix(filepath.Base(path), ".svg")
-		lowerThemedName := strings.ToLower(themedName)
+		themedName := strings.ToLower(strings.TrimSuffix(filepath.Base(path), ".svg"))
+		badges[themedName] = strings.TrimSpace(content)
 
-		badges[lowerThemedName] = strings.TrimSpace(content)
-
-		name := lowerThemedName
-		for _, theme := range domain.AvailableThemes() {
-			if before, found := strings.CutSuffix(name, "-"+theme); found {
-				name = before
-				break
-			}
-		}
-
+		name := domain.TrimThemeSuffix(themedName)
 		names[name] = struct{}{}
 		return nil
 	})
