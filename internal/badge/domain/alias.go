@@ -3,18 +3,18 @@ package domain
 import "strings"
 
 var aliases = map[string]string{
-	"go":           "golang",
-	"js":           "javascript",
-	"ts":           "typescript",
-	"alpine":       "alpinelinux",
-	"arch":         "archlinux",
-	"idea":         "intellijidea",
-	"postgres":     "postgresql",
-	"apachmaven":   "maven",
-	"jsonwebtoken": "jwt",
-	"tailwindcss":  "tailwind",
-	"vuejs":        "vue",
-	"zenbrowser":   "zen",
+	"go":       "golang",
+	"js":       "javascript",
+	"ts":       "typescript",
+	"alpine":   "alpinelinux",
+	"arch":     "archlinux",
+	"idea":     "intellijidea",
+	"postgres": "postgresql",
+	"maven":    "apachmaven",
+	"jwt":      "jsonwebtoken",
+	"tailwind": "tailwindcss",
+	"vue":      "vuejs",
+	"zen":      "zenbrowser",
 }
 
 func ResolveAlias(name string) string {
