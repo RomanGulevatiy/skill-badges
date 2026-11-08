@@ -15,6 +15,14 @@ var aliases = map[string]string{
 	"tailwind": "tailwindcss",
 	"vue":      "vuejs",
 	"zen":      "zenbrowser",
+	"cs":       "csharp",
+	"css":      "css3",
+	"html":     "html5",
+	"rs":       "rust",
+	"f":        "fortran",
+	"kt":       "kotlin",
+	"py":       "python",
+	"rb":       "ruby",
 }
 
 func ResolveAlias(name string) string {
