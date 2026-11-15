@@ -70,7 +70,6 @@ func (s *HTTPServer) Run() error {
 		return fmt.Errorf("shut down HTTP server: %w", err)
 	}
 
-	<-serverErr
 	if err := <-serverErr; err != nil {
 		return fmt.Errorf("listen and serve HTTP: %w", err)
 	}
