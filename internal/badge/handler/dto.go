@@ -15,7 +15,7 @@ type GetBadgesRequest struct {
 	Size    string
 }
 
-func (r GetBadgesRequest) Validate() (*usecase.GetBadgesInput, error) {
+func (r GetBadgesRequest) ToInput() (*usecase.GetBadgesInput, error) {
 	rawBadges := strings.Split(r.Badges, ",")
 
 	badges := make([]string, 0, len(rawBadges))
@@ -25,11 +25,8 @@ func (r GetBadgesRequest) Validate() (*usecase.GetBadgesInput, error) {
 		}
 	}
 
-	switch {
-	case len(badges) == 0:
+	if len(badges) == 0 {
 		return nil, domain.ErrNoBadgesProvided
-	case len(badges) > 2048:
-		return nil, domain.ErrBadgeParamTooLong
 	}
 
 	perline, err := strconv.Atoi(r.Perline)
