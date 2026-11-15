@@ -28,7 +28,6 @@ func New() (*Config, error) {
 
 func MustNew() *Config {
 	config, err := New()
-
 	if err != nil {
 		panic(fmt.Errorf("failed to load config: %w", err))
 	}
