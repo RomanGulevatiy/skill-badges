@@ -34,7 +34,7 @@ func (h *Handler) GetBadges(w http.ResponseWriter, r *http.Request) {
 		Size:    q.Get("size"),
 	}
 
-	in, err := req.Validate()
+	in, err := req.ToInput()
 	if err != nil {
 		h.logger.DebugContext(r.Context(), "invalid query parameters", slog.String("error", err.Error()))
 		http.Error(w, err.Error(), http.StatusBadRequest)
