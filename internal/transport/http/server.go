@@ -71,6 +71,9 @@ func (s *HTTPServer) Run() error {
 	}
 
 	<-serverErr
+	if err := <-serverErr; err != nil {
+		return fmt.Errorf("listen and serve HTTP: %w", err)
+	}
 
 	s.logger.Info("server exited gracefully")
 	return nil
