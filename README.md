@@ -37,20 +37,20 @@ High-performance, lightweight HTTP service written in Go for dynamically generat
 Copy this line into your README. Change the list after `b=` to your own skills, separated by commas.
 
 ```md
-[![My Skills](https://skill-badges.fly.dev/api/v1/badges?b=java,spring,go,js)](https://github.com/RomanGulevatiy/skill-badges)
+[![My Skills](https://skillbadges.fly.dev/badges?b=java,spring,go,js)](https://github.com/RomanGulevatiy/skill-badges)
 ```
 
-[![My Skills](https://skill-badges.fly.dev/api/v1/badges?b=java,spring,go,js)](https://github.com/RomanGulevatiy/skill-badges)
+[![My Skills](https://skillbadges.fly.dev/badges?b=java,spring,go,js)](https://github.com/RomanGulevatiy/skill-badges)
 
 ### Themes
 
 Some badges have a dark and a light version. The default theme is `dark`. Add `&theme=light` to switch.
 
 ```md
-[![My Skills](https://skill-badges.fly.dev/api/v1/badges?b=java,spring,arch,neovim&theme=light)](https://github.com/RomanGulevatiy/skill-badges)
+[![My Skills](https://skillbadges.fly.dev/badges?b=java,spring,arch,neovim&theme=light)](https://github.com/RomanGulevatiy/skill-badges)
 ```
 
-[![My Skills](https://skill-badges.fly.dev/api/v1/badges?b=java,spring,arch,neovim&theme=light)](https://github.com/RomanGulevatiy/skill-badges)
+[![My Skills](https://skillbadges.fly.dev/badges?b=java,spring,arch,neovim&theme=light)](https://github.com/RomanGulevatiy/skill-badges)
 
 > [!NOTE]
 > Badges without theme variants (docker, git, postman, golang, javascript, typescript) look the same in both themes.
@@ -60,20 +60,20 @@ Some badges have a dark and a light version. The default theme is `dark`. Add `&
 By default, you get 15 badges in a row. Add `&perline=` with a number from 1 to 32 to change it.
  
 ```md
-[![My Skills](https://skill-badges.fly.dev/api/v1/badges?b=docker,git,github,gitlab,idea,goland&perline=3)](https://github.com/RomanGulevatiy/skill-badges)
+[![My Skills](https://skillbadges.fly.dev/badges?b=docker,git,github,gitlab,idea,goland&perline=3)](https://github.com/RomanGulevatiy/skill-badges)
 ```
  
-[![My Skills](https://skill-badges.fly.dev/api/v1/badges?b=docker,git,github,gitlab,idea,goland&perline=3)](https://github.com/RomanGulevatiy/skill-badges)
+[![My Skills](https://skillbadges.fly.dev/badges?b=docker,git,github,gitlab,idea,goland&perline=3)](https://github.com/RomanGulevatiy/skill-badges)
 
 ### Size Presets
 
 Choose a size with `&size=`: `sm`, `md` (default), `lg` or `xl`.
 
 ```md
-[![My Skills](https://skill-badges.fly.dev/api/v1/badges?b=linux,debian,mongodb,postgres,redis&size=lg)](https://github.com/RomanGulevatiy/skill-badges)
+[![My Skills](https://skillbadges.fly.dev/badges?b=linux,debian,mongodb,postgres,redis&size=lg)](https://github.com/RomanGulevatiy/skill-badges)
 ```
  
-[![My Skills](https://skill-badges.fly.dev/api/v1/badges?b=linux,debian,mongodb,postgres,redis&size=lg)](https://github.com/RomanGulevatiy/skill-badges)
+[![My Skills](https://skillbadges.fly.dev/badges?b=linux,debian,mongodb,postgres,redis&size=lg)](https://github.com/RomanGulevatiy/skill-badges)
 
 ### Centering Badges
  
@@ -82,14 +82,14 @@ The badges are a normal image, so you can center them like any other image.
 ```html
 <p align="center">
   <a href="https://github.com/RomanGulevatiy/skill-badges">
-    <img src="https://skill-badges.fly.dev/api/v1/badges?b=js,ts,vite,vue,pinia,tailwind"/>
+    <img src="https://skillbadges.fly.dev/badges?b=js,ts,vite,vue,pinia,tailwind"/>
   </a>
 </p>
 ```
  
 <p align="center">
   <a href="https://github.com/RomanGulevatiy/skill-badges">
-    <img src="https://skill-badges.fly.dev/api/v1/badges?b=js,ts,vite,vue,pinia,tailwind"/>
+    <img src="https://skillbadges.fly.dev/badges?b=js,ts,vite,vue,pinia,tailwind"/>
   </a>
 </p>
 
