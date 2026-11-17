@@ -5,7 +5,7 @@
 
 app = "skillbadges"
 primary_region = "arn"
-kill_timeout = 120
+kill_timeout = "12s"
 
 [build]
 
