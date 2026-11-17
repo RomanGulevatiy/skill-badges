@@ -2,6 +2,8 @@ package domain
 
 import "strings"
 
+// aliases maps short user-facing badge names to their canonical asset names.
+// The map is read-only after initialization.
 var aliases = map[string]string{
 	"go":       "golang",
 	"js":       "javascript",

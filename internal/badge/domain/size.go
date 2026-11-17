@@ -2,8 +2,11 @@ package domain
 
 import "strings"
 
+// defaultSizePreset is the size used when the requested preset is missing or unsupported.
 const defaultSizePreset = "md"
 
+// sizePresets maps supported size names to badge dimensions in pixels.
+// The map is read-only after initialization.
 var sizePresets = map[string]Dimensions{
 	"sm": {Size: 32, Gap: 6},
 	"md": {Size: 48, Gap: 8},
