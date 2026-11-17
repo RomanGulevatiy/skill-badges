@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/RomanGulevatiy/skill-badges/internal/badge/domain"
@@ -67,6 +68,71 @@ func TestHandler_GetBadges(t *testing.T) {
 			},
 			expectedStatus:      http.StatusBadRequest,
 			expectedBody:        "at least one badge must be specified in 'b'\n",
+			expectedContentType: "text/plain; charset=utf-8",
+		},
+		{
+			name: "allows exactly the maximum number of badges",
+			url:  "/api/v1/badges?b=" + strings.Repeat("go,", 99) + "go",
+			mockGetBadges: func(ctx context.Context, in usecase.GetBadgesInput) (string, error) {
+				if len(in.Badges) != 100 {
+					t.Errorf("expected 100 badges, got %d", len(in.Badges))
+				}
+				return "<svg></svg>", nil
+			},
+			expectedStatus:      http.StatusOK,
+			expectedBody:        `<svg></svg>`,
+			expectedContentType: "image/svg+xml",
+		},
+		{
+			name: "rejects too many badges",
+			url:  "/api/v1/badges?b=" + strings.Repeat("go,", 100) + "go",
+			mockGetBadges: func(ctx context.Context, in usecase.GetBadgesInput) (string, error) {
+				t.Fatal("badge.usecase.GetBadges must not be called when validation fails")
+				return "", nil
+			},
+			expectedStatus:      http.StatusBadRequest,
+			expectedBody:        domain.ErrTooManyBadges.Error() + "\n",
+			expectedContentType: "text/plain; charset=utf-8",
+		},
+		{
+			name: "allows b at the maximum length",
+			url:  "/api/v1/badges?b=" + strings.Repeat("c", 2048),
+			mockGetBadges: func(ctx context.Context, in usecase.GetBadgesInput) (string, error) {
+				return "<svg></svg>", nil
+			},
+			expectedStatus:      http.StatusOK,
+			expectedBody:        `<svg></svg>`,
+			expectedContentType: "image/svg+xml",
+		},
+		{
+			name: "rejects b over the maximum length",
+			url:  "/api/v1/badges?b=" + strings.Repeat("c", 2049),
+			mockGetBadges: func(ctx context.Context, in usecase.GetBadgesInput) (string, error) {
+				t.Fatal("badge.usecase.GetBadges must not be called when validation fails")
+				return "", nil
+			},
+			expectedStatus:      http.StatusBadRequest,
+			expectedBody:        domain.ErrBadgesParamTooLong.Error() + "\n",
+			expectedContentType: "text/plain; charset=utf-8",
+		},
+		{
+			name: "allows response at the maximum size",
+			url:  "/api/v1/badges?b=go",
+			mockGetBadges: func(ctx context.Context, in usecase.GetBadgesInput) (string, error) {
+				return strings.Repeat("x", 1<<20), nil
+			},
+			expectedStatus:      http.StatusOK,
+			expectedBody:        strings.Repeat("x", 1<<20),
+			expectedContentType: "image/svg+xml",
+		},
+		{
+			name: "rejects oversized generated svg",
+			url:  "/api/v1/badges?b=go",
+			mockGetBadges: func(ctx context.Context, in usecase.GetBadgesInput) (string, error) {
+				return strings.Repeat("x", 1<<20+1), nil
+			},
+			expectedStatus:      http.StatusRequestEntityTooLarge,
+			expectedBody:        "generated badge image is too large\n",
 			expectedContentType: "text/plain; charset=utf-8",
 		},
 		{
