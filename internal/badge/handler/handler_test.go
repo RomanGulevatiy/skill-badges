@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/RomanGulevatiy/skill-badges/internal/badge/domain"
@@ -40,7 +41,7 @@ func TestHandler_GetBadges(t *testing.T) {
 	}{
 		{
 			name: "returns svg with parsed query params",
-			url:  "/api/v1/badges?b=go,git,docker&perline=3&theme=light&size=xl",
+			url:  "/badges?b=go,git,docker&perline=3&theme=light&size=xl",
 			mockGetBadges: func(ctx context.Context, in usecase.GetBadgesInput) (string, error) {
 				expectedInput := usecase.GetBadgesInput{
 					Badges:  []string{"golang", "git", "docker"},
@@ -60,7 +61,7 @@ func TestHandler_GetBadges(t *testing.T) {
 		},
 		{
 			name: "no badge parameter provided",
-			url:  "/api/v1/badges",
+			url:  "/badges",
 			mockGetBadges: func(ctx context.Context, in usecase.GetBadgesInput) (string, error) {
 				t.Fatal("badge.usecase.GetBadges must not be called when validation fails")
 				return "", nil
@@ -70,8 +71,73 @@ func TestHandler_GetBadges(t *testing.T) {
 			expectedContentType: "text/plain; charset=utf-8",
 		},
 		{
+			name: "allows exactly the maximum number of badges",
+			url:  "/badges?b=" + strings.Repeat("go,", 99) + "go",
+			mockGetBadges: func(ctx context.Context, in usecase.GetBadgesInput) (string, error) {
+				if len(in.Badges) != 100 {
+					t.Errorf("expected 100 badges, got %d", len(in.Badges))
+				}
+				return "<svg></svg>", nil
+			},
+			expectedStatus:      http.StatusOK,
+			expectedBody:        `<svg></svg>`,
+			expectedContentType: "image/svg+xml",
+		},
+		{
+			name: "rejects too many badges",
+			url:  "/badges?b=" + strings.Repeat("go,", 100) + "go",
+			mockGetBadges: func(ctx context.Context, in usecase.GetBadgesInput) (string, error) {
+				t.Fatal("badge.usecase.GetBadges must not be called when validation fails")
+				return "", nil
+			},
+			expectedStatus:      http.StatusBadRequest,
+			expectedBody:        domain.ErrTooManyBadges.Error() + "\n",
+			expectedContentType: "text/plain; charset=utf-8",
+		},
+		{
+			name: "allows b at the maximum length",
+			url:  "/badges?b=" + strings.Repeat("c", 2048),
+			mockGetBadges: func(ctx context.Context, in usecase.GetBadgesInput) (string, error) {
+				return "<svg></svg>", nil
+			},
+			expectedStatus:      http.StatusOK,
+			expectedBody:        `<svg></svg>`,
+			expectedContentType: "image/svg+xml",
+		},
+		{
+			name: "rejects b over the maximum length",
+			url:  "/badges?b=" + strings.Repeat("c", 2049),
+			mockGetBadges: func(ctx context.Context, in usecase.GetBadgesInput) (string, error) {
+				t.Fatal("badge.usecase.GetBadges must not be called when validation fails")
+				return "", nil
+			},
+			expectedStatus:      http.StatusBadRequest,
+			expectedBody:        domain.ErrBadgesParamTooLong.Error() + "\n",
+			expectedContentType: "text/plain; charset=utf-8",
+		},
+		{
+			name: "allows response at the maximum size",
+			url:  "/badges?b=go",
+			mockGetBadges: func(ctx context.Context, in usecase.GetBadgesInput) (string, error) {
+				return strings.Repeat("x", 1<<20), nil
+			},
+			expectedStatus:      http.StatusOK,
+			expectedBody:        strings.Repeat("x", 1<<20),
+			expectedContentType: "image/svg+xml",
+		},
+		{
+			name: "rejects oversized generated svg",
+			url:  "/badges?b=go",
+			mockGetBadges: func(ctx context.Context, in usecase.GetBadgesInput) (string, error) {
+				return strings.Repeat("x", 1<<20+1), nil
+			},
+			expectedStatus:      http.StatusRequestEntityTooLarge,
+			expectedBody:        "generated badge image is too large\n",
+			expectedContentType: "text/plain; charset=utf-8",
+		},
+		{
 			name: "falls back to default perline when perline is zero",
-			url:  "/api/v1/badges?b=go,docker&perline=0",
+			url:  "/badges?b=go,docker&perline=0",
 			mockGetBadges: func(ctx context.Context, in usecase.GetBadgesInput) (string, error) {
 				expectedInput := usecase.GetBadgesInput{
 					Badges:  []string{"golang", "docker"},
@@ -91,7 +157,7 @@ func TestHandler_GetBadges(t *testing.T) {
 		},
 		{
 			name: "falls back to default perline when perline is non-numeric",
-			url:  "/api/v1/badges?b=go,docker,mongodb&perline=ABC",
+			url:  "/badges?b=go,docker,mongodb&perline=ABC",
 			mockGetBadges: func(ctx context.Context, in usecase.GetBadgesInput) (string, error) {
 				expectedInput := usecase.GetBadgesInput{
 					Badges:  []string{"golang", "docker", "mongodb"},
@@ -111,7 +177,7 @@ func TestHandler_GetBadges(t *testing.T) {
 		},
 		{
 			name: "falls back to default theme when theme is unsupported",
-			url:  "/api/v1/badges?b=git,docker&theme=catppuccin",
+			url:  "/badges?b=git,docker&theme=catppuccin",
 			mockGetBadges: func(ctx context.Context, in usecase.GetBadgesInput) (string, error) {
 				expectedInput := usecase.GetBadgesInput{
 					Badges:  []string{"git", "docker"},
@@ -131,7 +197,7 @@ func TestHandler_GetBadges(t *testing.T) {
 		},
 		{
 			name: "falls back to default size when size is unsupported",
-			url:  "/api/v1/badges?b=linux,arch,debian&size=3xl",
+			url:  "/badges?b=linux,arch,debian&size=3xl",
 			mockGetBadges: func(ctx context.Context, in usecase.GetBadgesInput) (string, error) {
 				expectedInput := usecase.GetBadgesInput{
 					Badges:  []string{"linux", "archlinux", "debian"},
@@ -151,7 +217,7 @@ func TestHandler_GetBadges(t *testing.T) {
 		},
 		{
 			name: "badges not found",
-			url:  "/api/v1/badges?b=unknown",
+			url:  "/badges?b=unknown",
 			mockGetBadges: func(ctx context.Context, in usecase.GetBadgesInput) (string, error) {
 				return "", domain.ErrBadgeNotFound
 			},
@@ -161,7 +227,7 @@ func TestHandler_GetBadges(t *testing.T) {
 		},
 		{
 			name: "internal server error",
-			url:  "/api/v1/badges?b=go",
+			url:  "/badges?b=go",
 			mockGetBadges: func(ctx context.Context, in usecase.GetBadgesInput) (string, error) {
 				return "", errors.New("some error")
 			},

@@ -53,6 +53,13 @@ func (h *Handler) GetBadges(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(out) > maxResponseBytes {
+		h.logger.WarnContext(r.Context(), "generated badge image exceeds limit",
+			slog.Int("size", len(out)), slog.Int("limit", maxResponseBytes))
+		http.Error(w, "generated badge image is too large", http.StatusRequestEntityTooLarge)
+		return
+	}
+
 	w.Header().Set("Content-Type", "image/svg+xml")
 	w.Header().Set("Cache-Control", "public, max-age=86400")
 	w.Header().Set("X-Content-Type-Options", "nosniff")

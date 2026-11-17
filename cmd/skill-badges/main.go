@@ -28,12 +28,10 @@ func main() {
 	bHandler := badgehandler.New(bUsecase, log)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /api/v1/badges", bHandler.GetBadges)
+	mux.HandleFunc("GET /badges", bHandler.GetBadges)
 
-	logMiddleware := middleware.RequestLogger(log)
-	h := logMiddleware(mux)
-
-	server := httpserver.New(h, cfg.HTTPServer, log)
+	handler := middleware.RequestLogger(log)(mux)
+	server := httpserver.New(handler, cfg.HTTPServer, log)
 
 	if err = server.Run(); err != nil {
 		log.Error("internal server error", slog.Any("error", err))
