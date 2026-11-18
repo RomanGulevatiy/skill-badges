@@ -3,7 +3,6 @@ package usecase_test
 import (
 	"context"
 	"errors"
-	"log/slog"
 	"testing"
 
 	"github.com/RomanGulevatiy/skill-badges/internal/badge/domain"
@@ -23,8 +22,6 @@ func (r *mockRepository) Get(ctx context.Context, name, theme string) (string, e
 
 func TestUsecase_GetBadges(t *testing.T) {
 	t.Parallel()
-
-	logger := slog.New(slog.DiscardHandler)
 
 	tests := []struct {
 		name        string
@@ -161,7 +158,7 @@ func TestUsecase_GetBadges(t *testing.T) {
 			t.Parallel()
 
 			repo := &mockRepository{mockGet: test.mockGet}
-			uc := usecase.New(repo, logger)
+			uc := usecase.New(repo)
 
 			gotSVG, err := uc.GetBadges(t.Context(), test.in)
 			if !errors.Is(err, test.expectedErr) {
