@@ -5,9 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
-	"os/signal"
-	"syscall"
 )
 
 type HTTPServer struct {
@@ -24,10 +23,16 @@ func New(h http.Handler, cfg Config, log *slog.Logger) *HTTPServer {
 	}
 }
 
-func (s *HTTPServer) Run() error {
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer stop()
+func (s *HTTPServer) Run(ctx context.Context) error {
+	ln, err := net.Listen("tcp", s.config.Addr)
+	if err != nil {
+		return fmt.Errorf("listen HTTP: %w", err)
+	}
 
+	return s.serve(ctx, ln)
+}
+
+func (s *HTTPServer) serve(ctx context.Context, ln net.Listener) error {
 	server := &http.Server{
 		Addr:              s.config.Addr,
 		Handler:           s.handler,
@@ -42,36 +47,47 @@ func (s *HTTPServer) Run() error {
 	go func() {
 		defer close(serverErr)
 
-		s.logger.Info("server started", slog.String("addr", s.config.Addr))
-		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
-			serverErr <- err
+		s.logger.Info("server started", slog.String("addr", ln.Addr().String()))
+		err := server.Serve(ln)
+		if errors.Is(err, http.ErrServerClosed) {
+			return
 		}
+		serverErr <- err
 	}()
 
 	select {
 	case err := <-serverErr:
 		if err != nil {
-			return fmt.Errorf("listen and serve HTTP: %w", err)
+			return fmt.Errorf("serve HTTP: %w", err)
 		}
+		return nil
 	case <-ctx.Done():
-		s.logger.Info("context cancelled")
 	}
 
 	shutdownCtx, cancel := context.WithTimeout(
-		context.Background(),
+		context.WithoutCancel(ctx),
 		s.config.ShutDownTimeout,
 	)
 	defer cancel()
 
-	if err := server.Shutdown(shutdownCtx); err != nil {
+	shutdownErr := server.Shutdown(shutdownCtx)
+	if shutdownErr != nil {
 		if closeErr := server.Close(); closeErr != nil {
-			return errors.Join(err, closeErr)
+			shutdownErr = errors.Join(shutdownErr, closeErr)
 		}
-		return fmt.Errorf("shut down HTTP server: %w", err)
 	}
 
+	_ = ln.Close()
+
 	if err := <-serverErr; err != nil {
-		return fmt.Errorf("listen and serve HTTP: %w", err)
+		if shutdownErr != nil {
+			return errors.Join(fmt.Errorf("serve HTTP: %w", err), shutdownErr)
+		}
+		return fmt.Errorf("serve HTTP: %w", err)
+	}
+
+	if shutdownErr != nil {
+		return fmt.Errorf("shut down HTTP server: %w", shutdownErr)
 	}
 
 	s.logger.Info("server exited gracefully")
