@@ -3,7 +3,6 @@ package memory
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,10 +13,9 @@ import (
 type Repository struct {
 	themedBadges map[string]string
 	badgeNames   map[string]struct{}
-	logger       *slog.Logger
 }
 
-func New(dir string, log *slog.Logger) (*Repository, error) {
+func New(dir string) (*Repository, error) {
 	badges := make(map[string]string)
 	names := make(map[string]struct{})
 
@@ -62,12 +60,11 @@ func New(dir string, log *slog.Logger) (*Repository, error) {
 		return nil, fmt.Errorf("failed to read dir: %w", err)
 	}
 
-	return &Repository{themedBadges: badges, badgeNames: names, logger: log}, nil
+	return &Repository{themedBadges: badges, badgeNames: names}, nil
 }
 
-func (r *Repository) Get(ctx context.Context, name, theme string) (string, error) {
+func (r *Repository) Get(_ context.Context, name, theme string) (string, error) {
 	if _, ok := r.badgeNames[name]; !ok {
-		r.logger.DebugContext(ctx, "invalid or explicitly suffixed badge name requested", slog.String("name", name))
 		return "", domain.ErrBadgeNotFound
 	}
 
@@ -80,6 +77,5 @@ func (r *Repository) Get(ctx context.Context, name, theme string) (string, error
 		return badge, nil
 	}
 
-	r.logger.DebugContext(ctx, "badge not found in repository", slog.String("name", name))
 	return "", domain.ErrBadgeNotFound
 }
