@@ -17,6 +17,7 @@ var aliases = map[string]string{
 	"tailwind": "tailwindcss",
 	"vue":      "vuejs",
 	"zen":      "zenbrowser",
+	"c":        "clang",
 	"cs":       "csharp",
 	"css":      "css3",
 	"html":     "html5",
