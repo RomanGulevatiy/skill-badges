@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"strings"
 
 	"github.com/RomanGulevatiy/skill-badges/internal/badge/domain"
@@ -14,15 +13,11 @@ type Repository interface {
 }
 
 type Usecase struct {
-	bRepo  Repository
-	logger *slog.Logger
+	bRepo Repository
 }
 
-func New(bRepo Repository, log *slog.Logger) *Usecase {
-	return &Usecase{
-		bRepo:  bRepo,
-		logger: log,
-	}
+func New(bRepo Repository) *Usecase {
+	return &Usecase{bRepo: bRepo}
 }
 
 type GetBadgesInput struct {
@@ -38,7 +33,6 @@ func (u *Usecase) GetBadges(ctx context.Context, in GetBadgesInput) (string, err
 	for _, badge := range in.Badges {
 		b, err := u.bRepo.Get(ctx, badge, in.Theme)
 		if err != nil {
-			u.logger.DebugContext(ctx, "failed to get badge", slog.String("badge", badge), slog.Any("error", err))
 			continue
 		}
 		badges = append(badges, b)
