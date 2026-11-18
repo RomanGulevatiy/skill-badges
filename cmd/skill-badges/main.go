@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	badgehandler "github.com/RomanGulevatiy/skill-badges/internal/badge/handler"
 	badgememory "github.com/RomanGulevatiy/skill-badges/internal/badge/repository/memory"
@@ -18,13 +21,13 @@ func main() {
 	cfg := config.MustNew()
 	log := logger.New(cfg.Logger)
 
-	bRepo, err := badgememory.New("assets", log)
+	bRepo, err := badgememory.New("assets")
 	if err != nil {
 		log.Error("failed to init badge repository", slog.Any("error", err))
 		os.Exit(1)
 	}
 
-	bUsecase := badgeusecase.New(bRepo, log)
+	bUsecase := badgeusecase.New(bRepo)
 	bHandler := badgehandler.New(bUsecase, log)
 
 	mux := http.NewServeMux()
@@ -33,7 +36,10 @@ func main() {
 	handler := middleware.RequestLogger(log)(mux)
 	server := httpserver.New(handler, cfg.HTTPServer, log)
 
-	if err = server.Run(); err != nil {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	if err = server.Run(ctx); err != nil {
 		log.Error("internal server error", slog.Any("error", err))
 		os.Exit(1)
 	}
