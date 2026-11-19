@@ -36,17 +36,18 @@ func (r GetBadgesRequest) ToInput() (*usecase.GetBadgesInput, error) {
 		return nil, domain.ErrBadgesParamTooLong
 	}
 
-	rawBadges := strings.Split(r.Badges, ",")
+	capacity := min(strings.Count(r.Badges, ",")+1, maxBadges)
+	badges := make([]string, 0, capacity)
 
-	badges := make([]string, 0, len(rawBadges))
-	for _, b := range rawBadges {
-		if b = domain.ResolveAlias(b); b != "" {
-			badges = append(badges, b)
+	for name := range strings.SplitSeq(r.Badges, ",") {
+		b := domain.ResolveAlias(name)
+		if b == "" {
+			continue
 		}
-	}
-
-	if len(badges) > maxBadges {
-		return nil, domain.ErrTooManyBadges
+		if len(badges) == maxBadges {
+			return nil, domain.ErrTooManyBadges
+		}
+		badges = append(badges, b)
 	}
 
 	if len(badges) == 0 {
