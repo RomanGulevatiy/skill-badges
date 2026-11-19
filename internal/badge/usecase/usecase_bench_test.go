@@ -126,3 +126,19 @@ func BenchmarkRender(b *testing.B) {
 		}
 	}
 }
+
+func TestRenderAllocations(t *testing.T) {
+	badges := make([]string, 100)
+	for i := range badges {
+		badges[i] = `<path fill="#fff" d="M0 0h1v1z"/>`
+	}
+
+	dim := domain.Dimensions{Size: 48, Gap: 8}
+
+	allocs := testing.AllocsPerRun(100, func() {
+		_ = render(badges, 15, dim)
+	})
+	if allocs > 1 {
+		t.Fatalf("render() allocations = %.0f, want <= 1", allocs)
+	}
+}
