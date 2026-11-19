@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"context"
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/RomanGulevatiy/skill-badges/internal/badge/domain"
@@ -60,19 +60,33 @@ func render(badges []string, perline int, dim domain.Dimensions) string {
 	var b strings.Builder
 	b.Grow(capacity)
 
-	fmt.Fprintf(&b,
-		`<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" fill="none" viewBox="0 0 %d %d">`,
-		width, height, width, height,
-	)
+	var scratch [160]byte
+
+	buf := append(scratch[:0], `<svg xmlns="http://www.w3.org/2000/svg" width="`...)
+	buf = strconv.AppendInt(buf, int64(width), 10)
+	buf = append(buf, `" height="`...)
+	buf = strconv.AppendInt(buf, int64(height), 10)
+	buf = append(buf, `" fill="none" viewBox="0 0 `...)
+	buf = strconv.AppendInt(buf, int64(width), 10)
+	buf = append(buf, ' ')
+	buf = strconv.AppendInt(buf, int64(height), 10)
+	buf = append(buf, `">`...)
+	b.Write(buf)
 
 	for i, badge := range badges {
 		x := (i % perline) * (dim.Size + dim.Gap)
 		y := (i / perline) * (dim.Size + dim.Gap)
 
-		fmt.Fprintf(&b,
-			`<svg x="%d" y="%d" width="%d" height="%d" viewBox="0 0 256 256">`,
-			x, y, dim.Size, dim.Size,
-		)
+		buf = append(scratch[:0], `<svg x="`...)
+		buf = strconv.AppendInt(buf, int64(x), 10)
+		buf = append(buf, `" y="`...)
+		buf = strconv.AppendInt(buf, int64(y), 10)
+		buf = append(buf, `" width="`...)
+		buf = strconv.AppendInt(buf, int64(dim.Size), 10)
+		buf = append(buf, `" height="`...)
+		buf = strconv.AppendInt(buf, int64(dim.Size), 10)
+		buf = append(buf, `" viewBox="0 0 256 256">`...)
+		b.Write(buf)
 		b.WriteString(badge)
 		b.WriteString(`</svg>`)
 	}
