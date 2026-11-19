@@ -64,3 +64,44 @@ func BenchmarkGetBadgesRequestToInput(b *testing.B) {
 		})
 	}
 }
+
+func TestToInputAllocations(t *testing.T) {
+	tests := []struct {
+		name string
+		req  GetBadgesRequest
+	}{
+		{
+			name: "typical",
+			req: GetBadgesRequest{
+				Badges:  "js,ts,vite,vue,pinia,tailwind",
+				Perline: "15",
+				Theme:   "dark",
+				Size:    "md",
+			},
+		},
+		{
+			name: "max badges",
+			req: GetBadgesRequest{
+				Badges:  strings.Repeat("go,", maxBadges-1) + "go",
+				Perline: "15",
+				Theme:   "dark",
+				Size:    "md",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			allocs := testing.AllocsPerRun(100, func() {
+				in, err := test.req.ToInput()
+				if err != nil {
+					t.Fatalf("ToInput() error: %v", err)
+				}
+				_ = in
+			})
+			if allocs > 2 {
+				t.Fatalf("ToInput() allocations = %.0f, want <= 2", allocs)
+			}
+		})
+	}
+}
