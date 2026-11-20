@@ -18,7 +18,11 @@ import (
 )
 
 func main() {
-	cfg := config.MustNew()
+	cfg, err := config.New()
+	if err != nil {
+		slog.Error("failed to load config", slog.Any("error", err))
+		os.Exit(1)
+	}
 	log := logger.New(cfg.Logger)
 
 	bRepo, err := badgememory.New("assets")
