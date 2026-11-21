@@ -26,6 +26,14 @@ var aliases = map[string]string{
 	"kt":       "kotlin",
 	"py":       "python",
 	"rb":       "ruby",
+	"as":       "assemblyscript",
+	"shell":    "bash",
+	"clj":      "clojure",
+	"cr":       "crystal",
+	"ex":       "elixir",
+	"hs":       "haskell",
+	"sc":       "scala",
+	"wasm":     "webassembly",
 }
 
 func ResolveAlias(name string) string {
