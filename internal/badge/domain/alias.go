@@ -34,6 +34,7 @@ var aliases = map[string]string{
 	"hs":       "haskell",
 	"sc":       "scala",
 	"wasm":     "webassembly",
+	"md":       "markdown",
 }
 
 func ResolveAlias(name string) string {
