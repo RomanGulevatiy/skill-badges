@@ -36,6 +36,15 @@ var aliases = map[string]string{
 	"wasm":     "webassembly",
 	"md":       "markdown",
 	"ocaml":    "objectivecaml",
+	"dj":       "django",
+	"express":  "expressjs",
+	"nest":     "nestjs",
+	"next":     "nextjs",
+	"nuxt":     "nuxtjs",
+	"rails":    "rubyonrails",
+	"unreal":   "unrealengine",
+	"ue":       "unrealengine",
+	"ue5":      "unrealengine",
 }
 
 func ResolveAlias(name string) string {
