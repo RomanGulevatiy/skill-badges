@@ -1,7 +1,9 @@
 package config
 
 import (
+	"errors"
 	"fmt"
+	"os"
 
 	"github.com/RomanGulevatiy/skill-badges/internal/logger"
 	httpserver "github.com/RomanGulevatiy/skill-badges/internal/transport/http"
@@ -15,22 +17,14 @@ type Config struct {
 }
 
 func New() (*Config, error) {
-	_ = godotenv.Load()
+	if err := godotenv.Load(); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return nil, fmt.Errorf("failed to load .env: %w", err)
+	}
 
 	var cfg Config
 
 	if err := env.Parse(&cfg); err != nil {
 		return nil, fmt.Errorf("failed to parse config: %w", err)
 	}
-
 	return &cfg, nil
-}
-
-func MustNew() *Config {
-	config, err := New()
-	if err != nil {
-		panic(fmt.Errorf("failed to load config: %w", err))
-	}
-
-	return config
 }
